@@ -40,24 +40,69 @@ export default async function VehiclesPage() {
               'use server'
               await addVehicle(formData)
             }} className="space-y-4 pt-4">
+              
+              <datalist id="car-makes">
+                <option value="Toyota" />
+                <option value="Honda" />
+                <option value="Ford" />
+                <option value="Chevrolet" />
+                <option value="Nissan" />
+                <option value="Hyundai" />
+                <option value="Kia" />
+                <option value="Mahindra" />
+                <option value="Tata" />
+                <option value="Maruti Suzuki" />
+                <option value="BMW" />
+                <option value="Mercedes-Benz" />
+                <option value="Audi" />
+                <option value="Volkswagen" />
+                <option value="Tesla" />
+              </datalist>
+
+              <datalist id="car-models">
+                <option value="Camry" />
+                <option value="Corolla" />
+                <option value="Civic" />
+                <option value="Accord" />
+                <option value="F-150" />
+                <option value="Mustang" />
+                <option value="Thar" />
+                <option value="Scorpio" />
+                <option value="XUV700" />
+                <option value="Nexon" />
+                <option value="Swift" />
+                <option value="Model 3" />
+                <option value="Model Y" />
+              </datalist>
+
+              <datalist id="car-colors">
+                <option value="White" />
+                <option value="Black" />
+                <option value="Silver" />
+                <option value="Grey" />
+                <option value="Red" />
+                <option value="Blue" />
+                <option value="Brown" />
+              </datalist>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="make">Make</Label>
-                  <Input id="make" name="make" placeholder="e.g. Toyota" required />
+                  <Input id="make" name="make" list="car-makes" placeholder="e.g. Toyota" required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="model">Model</Label>
-                  <Input id="model" name="model" placeholder="e.g. Camry" required />
+                  <Input id="model" name="model" list="car-models" placeholder="e.g. Camry" required />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="year">Year</Label>
-                  <Input id="year" name="year" type="number" placeholder="e.g. 2020" />
+                  <Input id="year" name="year" type="number" min="1990" max={new Date().getFullYear() + 1} placeholder="e.g. 2020" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="color">Color</Label>
-                  <Input id="color" name="color" placeholder="e.g. Silver" />
+                  <Input id="color" name="color" list="car-colors" placeholder="e.g. Silver" />
                 </div>
               </div>
               <div className="space-y-2">
