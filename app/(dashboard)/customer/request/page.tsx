@@ -31,6 +31,7 @@ export default function RequestHelpPage() {
   const [error, setError] = useState<string | null>(null)
   const [nearbyMechanics, setNearbyMechanics] = useState<RadarMechanic[]>([])
   const [radarLoading, setRadarLoading] = useState(false)
+  const [selectedMechanic, setSelectedMechanic] = useState<RadarMechanic | null>(null)
   
   useEffect(() => {
     const fetchVehicles = async () => {
@@ -175,8 +176,11 @@ export default function RequestHelpPage() {
               </div>
 
             </div>
+            {selectedMechanic && (
+              <input type="hidden" name="target_mechanic_id" value={selectedMechanic.id} />
+            )}
             <Button type="submit" size="lg" className="w-full text-lg h-14" disabled={!location || vehicles.length === 0}>
-              Find Nearest Mechanic
+              {selectedMechanic ? `Send Request to ${selectedMechanic.shop_name}` : 'Find Nearest Mechanic'}
             </Button>
           </form>
         </CardContent>
@@ -195,7 +199,14 @@ export default function RequestHelpPage() {
                   <Navigation className="w-8 h-8 animate-spin text-green-500" />
                 </div>
               ) : (
-                <MechanicRadar mechanics={nearbyMechanics} />
+                <MechanicRadar 
+                  mechanics={nearbyMechanics} 
+                  selectedMechanicId={selectedMechanic?.id}
+                  onSelect={(mechanic) => {
+                    // Toggle selection
+                    setSelectedMechanic(prev => prev?.id === mechanic.id ? null : mechanic)
+                  }}
+                />
               )}
             </CardContent>
           </Card>

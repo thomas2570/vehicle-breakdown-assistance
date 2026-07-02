@@ -16,6 +16,8 @@ export async function submitBreakdownRequest(formData: FormData) {
   const location_lat = parseFloat(formData.get('lat') as string)
   const location_lng = parseFloat(formData.get('lng') as string)
 
+  const target_mechanic_id = formData.get('target_mechanic_id') as string | null
+
   if (!location_lat || !location_lng) {
      return { error: 'Location is required. Please allow GPS access.' }
   }
@@ -27,6 +29,7 @@ export async function submitBreakdownRequest(formData: FormData) {
     description,
     location_lat,
     location_lng,
+    mechanic_id: target_mechanic_id || null,
     status: 'pending'
   }).select().single()
 
@@ -54,10 +57,10 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 export async function getNearbyMechanics(lat: number, lng: number) {
   const supabase = await createClient()
   
-  // Fetch all available mechanics
+  // Fetch all available mechanics with their phone number
   const { data: mechanics, error } = await supabase
     .from('mechanics')
-    .select('id, shop_name, current_lat, current_lng')
+    .select('id, shop_name, current_lat, current_lng, profiles!inner(phone)')
     .eq('is_available', true)
     .not('current_lat', 'is', null)
     .not('current_lng', 'is', null)
@@ -70,7 +73,11 @@ export async function getNearbyMechanics(lat: number, lng: number) {
   const mechanicsWithDistance = mechanics.map(mechanic => {
     const distance = calculateDistance(lat, lng, mechanic.current_lat!, mechanic.current_lng!);
     return {
-      ...mechanic,
+      id: mechanic.id,
+      shop_name: mechanic.shop_name,
+      current_lat: mechanic.current_lat,
+      current_lng: mechanic.current_lng,
+      phone: (mechanic.profiles as any)?.phone,
       distance
     }
   }).filter(m => m.distance <= 50)

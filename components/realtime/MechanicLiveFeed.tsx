@@ -15,6 +15,7 @@ type PendingRequest = {
   problem_type: string
   location_lat: number
   location_lng: number
+  mechanic_id: string | null
   created_at: string
   vehicles: { make: string; model: string } | null
   profiles: { full_name: string } | null
@@ -23,11 +24,13 @@ type PendingRequest = {
 export function MechanicLiveFeed({ 
   initialRequests,
   mechanicLat,
-  mechanicLng
+  mechanicLng,
+  currentMechanicId
 }: { 
   initialRequests: PendingRequest[] | null,
   mechanicLat?: number,
-  mechanicLng?: number 
+  mechanicLng?: number,
+  currentMechanicId?: string
 }) {
   const [requests, setRequests] = useState<PendingRequest[]>(initialRequests || [])
   const router = useRouter()
@@ -60,16 +63,30 @@ export function MechanicLiveFeed({
           filter: "status=eq.pending"
         },
         async (payload) => {
-          // Play a sound (optional/browser might block unless interacted with first)
+          // If the request is targeted at a specific mechanic, ignore it if it's not us
+          if (payload.new.mechanic_id && payload.new.mechanic_id !== currentMechanicId) {
+            return
+          }
+
+          const isDirectRequest = payload.new.mechanic_id === currentMechanicId
+
+          // Play a sound
           try {
             const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3')
             audio.play().catch(() => {})
           } catch(e) {}
 
-          toast.info('Emergency: New Breakdown Request nearby!', {
-            description: 'Check the live feed for details.',
-            duration: 8000,
-          })
+          if (isDirectRequest) {
+            toast.error('🚨 DIRECT REQUEST RECEIVED!', {
+              description: 'A customer has specifically requested your assistance!',
+              duration: 10000,
+            })
+          } else {
+            toast.info('Emergency: New Breakdown Request nearby!', {
+              description: 'Check the live feed for details.',
+              duration: 8000,
+            })
+          }
 
           // We only get the base row from the payload, so we need to fetch the joined data (vehicle, profile)
           const { data } = await supabase
@@ -134,16 +151,17 @@ export function MechanicLiveFeed({
           <div className="space-y-6">
             {sortedRequests.map((request) => {
               const distance = getDistance(request.location_lat, request.location_lng, mechanicLat, mechanicLng)
+              const isDirectRequest = request.mechanic_id === currentMechanicId
               return (
-                <div key={request.id} className="flex flex-col sm:flex-row sm:items-center p-4 border rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors gap-4">
-                  <div className="bg-red-100 dark:bg-red-900/30 p-3 rounded-full shrink-0 self-start sm:self-center">
-                    <Clock className="h-6 w-6 text-red-600 dark:text-red-500" />
+                <div key={request.id} className={`flex flex-col sm:flex-row sm:items-center p-4 border rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors gap-4 ${isDirectRequest ? 'border-amber-500 bg-amber-50/50 dark:bg-amber-950/20 shadow-sm shadow-amber-500/20' : ''}`}>
+                  <div className={`p-3 rounded-full shrink-0 self-start sm:self-center ${isDirectRequest ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-500' : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-500'}`}>
+                    <Clock className="h-6 w-6" />
                   </div>
                   <div className="space-y-1 flex-1">
                     <div className="flex justify-between items-start">
                       <p className="font-semibold text-lg capitalize">{request.problem_type.replace('_', ' ')}</p>
-                      <span className="text-xs font-medium bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-400 px-2 py-1 rounded-full animate-pulse">
-                        URGENT
+                      <span className={`text-xs font-medium px-2 py-1 rounded-full animate-pulse ${isDirectRequest ? 'bg-amber-500 text-white' : 'bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-400'}`}>
+                        {isDirectRequest ? 'DIRECT REQUEST' : 'URGENT'}
                       </span>
                     </div>
                     <p className="text-sm">

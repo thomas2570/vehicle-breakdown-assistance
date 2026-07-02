@@ -30,12 +30,12 @@ export default async function MechanicDashboard() {
     .eq('mechanic_id', user?.id)
     .eq('status', 'completed')
 
-  // Fetch pending unassigned jobs
+  // Fetch pending unassigned jobs or jobs assigned directly to this mechanic
   const { data: pendingRequests } = await supabase
     .from('breakdown_requests')
     .select('*, profiles:customer_id(full_name), vehicles(make, model)')
     .eq('status', 'pending')
-    .is('mechanic_id', null)
+    .or(`mechanic_id.is.null,mechanic_id.eq.${user?.id}`)
     .order('created_at', { ascending: false })
     .limit(5)
 
@@ -83,6 +83,7 @@ export default async function MechanicDashboard() {
           initialRequests={pendingRequests as any} 
           mechanicLat={mechanic?.current_lat} 
           mechanicLng={mechanic?.current_lng} 
+          currentMechanicId={mechanic?.id}
         />
       </div>
     </div>
