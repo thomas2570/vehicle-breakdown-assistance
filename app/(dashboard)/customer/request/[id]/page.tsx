@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { MapPin, Navigation, User, Phone } from 'lucide-react'
 import { redirect } from 'next/navigation'
+import { LiveTracker } from '@/components/realtime/LiveTracker'
 
 export default async function RequestTrackingPage({ params }: { params: { id: string } }) {
   const supabase = await createClient()
@@ -29,25 +30,7 @@ export default async function RequestTrackingPage({ params }: { params: { id: st
 
       <div className="grid md:grid-cols-3 gap-6">
         <div className="md:col-span-1 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Status</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl font-bold capitalize text-primary flex items-center gap-2">
-                <span className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
-                </span>
-                {request.status.replace('_', ' ')}
-              </div>
-              <p className="text-sm text-muted-foreground mt-2">
-                {request.status === 'pending' && "Waiting for a nearby mechanic to accept your request..."}
-                {request.status === 'accepted' && "A mechanic has accepted your request!"}
-                {request.status === 'en_route' && "Mechanic is on their way to your location."}
-              </p>
-            </CardContent>
-          </Card>
+          <LiveTracker initialRequest={request} />
 
           <Card>
             <CardHeader>

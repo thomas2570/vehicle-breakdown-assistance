@@ -24,7 +24,7 @@ const adminLinks = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/users', label: 'Manage Users', icon: Users },
   { href: '/admin/mechanics', label: 'Verify Mechanics', icon: Wrench },
-  { href: '/admin/settings', label: 'System Settings', icon: Settings },
+  { href: '/admin/jobs', label: 'Global Job Tracker', icon: Settings },
 ]
 
 export function Sidebar({ role }: { role: 'customer' | 'mechanic' | 'admin' }) {
