@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MapPin, User, Car, Clock, CheckCircle2, ArrowRight } from 'lucide-react'
 import { acceptRequest, updateRequestStatus } from '../actions'
+import { AcceptJobButton, UpdateStatusButton } from '@/components/dashboard/MechanicActionButtons'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -117,30 +118,32 @@ export default async function MechanicRequestsPage() {
                     )}
                   </CardContent>
                   <CardFooter className="border-t bg-zinc-50/50 dark:bg-zinc-900/20 pt-4 flex gap-2 flex-wrap">
-                    {request.status === 'accepted' && (
-                      <form action={async () => {
-                        'use server'
-                        await updateRequestStatus(request.id, 'en_route')
-                      }} className="w-full">
-                        <Button className="w-full">Mark as En Route <ArrowRight className="w-4 h-4 ml-2" /></Button>
-                      </form>
-                    )}
-                    {request.status === 'en_route' && (
-                      <form action={async () => {
-                        'use server'
-                        await updateRequestStatus(request.id, 'in_progress')
-                      }} className="w-full">
-                        <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white">Arrived - Start Work <ArrowRight className="w-4 h-4 ml-2" /></Button>
-                      </form>
-                    )}
-                    {request.status === 'in_progress' && (
-                      <form action={async () => {
-                        'use server'
-                        await updateRequestStatus(request.id, 'completed')
-                      }} className="w-full">
-                        <Button className="w-full bg-green-600 hover:bg-green-700 text-white"><CheckCircle2 className="w-4 h-4 mr-2" /> Mark Completed</Button>
-                      </form>
-                    )}
+                    <div className="flex gap-2 flex-wrap w-full">
+                      {request.status === 'accepted' && (
+                        <UpdateStatusButton 
+                          requestId={request.id} 
+                          status="en_route" 
+                          label="Mark as En Route" 
+                        />
+                      )}
+                      {request.status === 'en_route' && (
+                        <UpdateStatusButton 
+                          requestId={request.id} 
+                          status="in_progress" 
+                          label="Arrived - Start Work" 
+                          variant="amber" 
+                        />
+                      )}
+                      {request.status === 'in_progress' && (
+                        <UpdateStatusButton 
+                          requestId={request.id} 
+                          status="completed" 
+                          label="Mark Completed" 
+                          variant="green"
+                          icon={CheckCircle2}
+                        />
+                      )}
+                    </div>
                   </CardFooter>
                 </Card>
               ))
@@ -187,12 +190,7 @@ export default async function MechanicRequestsPage() {
                     </div>
                   </CardContent>
                   <CardFooter className="border-t pt-4">
-                    <form action={async () => {
-                      'use server'
-                      await acceptRequest(request.id)
-                    }} className="w-full">
-                      <Button className="w-full text-lg h-12 bg-green-600 hover:bg-green-700 text-white">Accept Job</Button>
-                    </form>
+                    <AcceptJobButton requestId={request.id} />
                   </CardFooter>
                 </Card>
               ))

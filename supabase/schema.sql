@@ -159,7 +159,7 @@ CREATE POLICY "Customers can create breakdown requests" ON public.breakdown_requ
   FOR INSERT WITH CHECK (auth.uid() = customer_id);
 
 CREATE POLICY "Mechanics can accept pending requests" ON public.breakdown_requests 
-  FOR UPDATE USING (status = 'pending');
+  FOR UPDATE USING (status = 'pending') WITH CHECK (status = 'accepted' AND mechanic_id = auth.uid());
 CREATE POLICY "Participants can update breakdown requests" ON public.breakdown_requests 
   FOR UPDATE USING (auth.uid() = customer_id OR auth.uid() = mechanic_id);
 
