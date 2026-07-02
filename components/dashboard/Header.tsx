@@ -13,9 +13,9 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { signout } from '@/app/(auth)/actions'
 
-import type { User } from '@supabase/supabase-js'
+import type { User as SupabaseUser } from '@supabase/supabase-js'
 
-export function DashboardHeader({ user }: { user: User | null }) {
+export function DashboardHeader({ user }: { user: SupabaseUser | null }) {
   return (
     <header className="h-16 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 flex items-center justify-between px-4 lg:px-6">
       <div className="flex items-center gap-4">
