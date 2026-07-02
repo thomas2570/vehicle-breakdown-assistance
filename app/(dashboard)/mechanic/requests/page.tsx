@@ -9,12 +9,12 @@ export default async function MechanicRequestsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Fetch all pending unassigned requests
+  // Fetch all pending unassigned requests or requests assigned specifically to this mechanic
   const { data: pendingRequests } = await supabase
     .from('breakdown_requests')
     .select('*, profiles:customer_id(full_name, phone), vehicles(make, model, license_plate)')
     .eq('status', 'pending')
-    .is('mechanic_id', null)
+    .or(`mechanic_id.is.null,mechanic_id.eq.${user?.id}`)
     .order('created_at', { ascending: false })
 
   // Fetch active requests assigned to this mechanic
