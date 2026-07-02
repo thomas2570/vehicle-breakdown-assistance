@@ -140,6 +140,7 @@ CREATE POLICY "Users can insert own profile" ON public.profiles FOR INSERT WITH 
 CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
 
 -- Other generic policies
+CREATE POLICY "Mechanics can view vehicles" ON public.vehicles FOR SELECT USING (true);
 CREATE POLICY "Users can view their own vehicles" ON public.vehicles FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can insert their own vehicles" ON public.vehicles FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can update their own vehicles" ON public.vehicles FOR UPDATE USING (auth.uid() = user_id);
@@ -148,10 +149,17 @@ CREATE POLICY "Users can delete their own vehicles" ON public.vehicles FOR DELET
 CREATE POLICY "Everyone can view mechanics" ON public.mechanics FOR SELECT USING (true);
 CREATE POLICY "Mechanics can update themselves" ON public.mechanics FOR UPDATE USING (auth.uid() = id);
 
+-- Breakdown requests policies
+CREATE POLICY "Mechanics can view pending requests" ON public.breakdown_requests 
+  FOR SELECT USING (status = 'pending' AND auth.uid() IN (SELECT id FROM public.mechanics));
 CREATE POLICY "Users can view breakdown requests they are part of" ON public.breakdown_requests 
   FOR SELECT USING (auth.uid() = customer_id OR auth.uid() = mechanic_id);
+
 CREATE POLICY "Customers can create breakdown requests" ON public.breakdown_requests 
   FOR INSERT WITH CHECK (auth.uid() = customer_id);
+
+CREATE POLICY "Mechanics can accept pending requests" ON public.breakdown_requests 
+  FOR UPDATE USING (status = 'pending');
 CREATE POLICY "Participants can update breakdown requests" ON public.breakdown_requests 
   FOR UPDATE USING (auth.uid() = customer_id OR auth.uid() = mechanic_id);
 
