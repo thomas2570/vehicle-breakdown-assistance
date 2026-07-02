@@ -34,7 +34,7 @@ export function DashboardHeader({ user }: { user: any }) {
               <User className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
             </div>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="end" forceMount>
+          <DropdownMenuContent className="w-56" align="end">
             <DropdownMenuGroup>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
@@ -49,13 +49,11 @@ export function DashboardHeader({ user }: { user: any }) {
             <DropdownMenuItem>Profile</DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <form action={signout} className="w-full">
-                <button type="submit" className="w-full text-left cursor-pointer text-red-600 dark:text-red-500">
-                  Log out
-                </button>
-              </form>
-            </DropdownMenuItem>
+            <form action={signout} className="w-full">
+              <DropdownMenuItem render={<button type="submit" className="w-full text-left cursor-pointer text-red-500 hover:text-red-600" />}>
+                Log out
+              </DropdownMenuItem>
+            </form>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
