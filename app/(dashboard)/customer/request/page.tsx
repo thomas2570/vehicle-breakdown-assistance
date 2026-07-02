@@ -179,8 +179,10 @@ export default function RequestHelpPage() {
             {selectedMechanic && (
               <input type="hidden" name="target_mechanic_id" value={selectedMechanic.id} />
             )}
-            <Button type="submit" size="lg" className="w-full text-lg h-14" disabled={!location || vehicles.length === 0}>
-              {selectedMechanic ? `Send Request to ${selectedMechanic.shop_name}` : 'Find Nearest Mechanic'}
+            <Button type="submit" className="w-full text-base sm:text-lg h-auto min-h-[3.5rem] py-3" disabled={!location || vehicles.length === 0}>
+              <span className="line-clamp-2 whitespace-normal break-words px-2">
+                {selectedMechanic ? `Send Request to ${selectedMechanic.shop_name}` : 'Find Nearest Mechanic'}
+              </span>
             </Button>
           </form>
         </CardContent>

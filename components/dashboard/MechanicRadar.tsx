@@ -116,11 +116,11 @@ export function MechanicRadar({ mechanics: initialMechanics, selectedMechanicId,
               
               {/* Tooltip / Details */}
               <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max transition-opacity z-30 ${selectedMechanicId === mechanic.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 pointer-events-none'}`}>
-                <div className={`text-white text-xs px-3 py-2 rounded shadow-xl flex flex-col items-center border ${selectedMechanicId === mechanic.id ? 'bg-zinc-900 border-amber-500/50' : 'bg-zinc-800 border-zinc-700'}`}>
-                  <span className={`font-semibold ${selectedMechanicId === mechanic.id ? 'text-amber-400' : 'text-green-400'}`}>{mechanic.shop_name}</span>
-                  <span className="text-zinc-400 text-[10px] mt-0.5">{mechanic.distance.toFixed(1)} km away</span>
+                <div className={`text-white px-3 py-2 rounded shadow-xl flex flex-col items-center border ${selectedMechanicId === mechanic.id ? 'bg-zinc-900 border-amber-500/50' : 'bg-zinc-800 border-zinc-700'}`}>
+                  <span className={`font-semibold text-center text-xs md:text-sm whitespace-normal max-w-[150px] md:max-w-[200px] break-words leading-tight ${selectedMechanicId === mechanic.id ? 'text-amber-400' : 'text-green-400'}`}>{mechanic.shop_name}</span>
+                  <span className="text-zinc-400 text-[10px] mt-1">{mechanic.distance.toFixed(1)} km away</span>
                   {selectedMechanicId === mechanic.id && mechanic.phone && (
-                    <span className="text-zinc-300 font-mono mt-1 pt-1 border-t border-zinc-700/50 w-full text-center">{mechanic.phone}</span>
+                    <span className="text-zinc-300 font-mono text-xs mt-1.5 pt-1.5 border-t border-zinc-700/50 w-full text-center">{mechanic.phone}</span>
                   )}
                 </div>
               </div>
