@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/server'
 import { Clock, MapPin, CheckCircle2 } from 'lucide-react'
+import { CancelRequestButton } from '@/components/dashboard/CancelRequestButton'
 
 export default async function HistoryPage() {
   const supabase = await createClient()
@@ -54,6 +55,9 @@ export default async function HistoryPage() {
                     <div className="text-xs text-muted-foreground mt-2">
                       {new Date(request.created_at).toLocaleString()}
                     </div>
+                    {(request.status === 'pending' || request.status === 'accepted') && (
+                      <CancelRequestButton requestId={request.id} className="mt-4 text-xs h-8 px-3 w-full" />
+                    )}
                   </div>
                 </div>
               ))}

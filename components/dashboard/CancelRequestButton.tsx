@@ -6,7 +6,7 @@ import { cancelBreakdownRequest } from '@/app/(dashboard)/customer/request/actio
 import { Loader2, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 
-export function CancelRequestButton({ requestId }: { requestId: string }) {
+export function CancelRequestButton({ requestId, className = "w-full mt-4" }: { requestId: string, className?: string }) {
   const [loading, setLoading] = useState(false)
 
   const handleCancel = async () => {
@@ -29,7 +29,7 @@ export function CancelRequestButton({ requestId }: { requestId: string }) {
       variant="destructive" 
       onClick={handleCancel}
       disabled={loading}
-      className="w-full mt-4"
+      className={className}
     >
       {loading ? (
         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
