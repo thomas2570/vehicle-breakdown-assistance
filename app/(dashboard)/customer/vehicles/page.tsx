@@ -36,7 +36,10 @@ export default async function VehiclesPage() {
                 Enter your vehicle details below. This will help mechanics identify your car quickly.
               </DialogDescription>
             </DialogHeader>
-            <form action={addVehicle} className="space-y-4 pt-4">
+            <form action={async (formData) => {
+              'use server'
+              await addVehicle(formData)
+            }} className="space-y-4 pt-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="make">Make</Label>
