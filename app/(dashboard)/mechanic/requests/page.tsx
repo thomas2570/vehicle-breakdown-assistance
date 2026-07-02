@@ -71,9 +71,16 @@ export default async function MechanicRequestsPage() {
                       </div>
                     </div>
                     
-                    <div className="p-3 bg-zinc-100 dark:bg-zinc-900 rounded-md">
-                      <span className="text-sm text-muted-foreground flex items-center gap-1 mb-1"><MapPin className="w-3 h-3"/> Location</span>
-                      <p className="text-sm font-medium">Lat: {request.location_lat.toFixed(5)}, Lng: {request.location_lng.toFixed(5)}</p>
+                    <div className="mt-4 w-full h-48 bg-zinc-200 dark:bg-zinc-950/50 rounded-xl relative overflow-hidden flex items-center justify-center border border-zinc-300 dark:border-zinc-800">
+                      <div className="absolute top-2 left-2 bg-white/90 dark:bg-zinc-900/90 backdrop-blur p-2 rounded shadow-sm text-xs font-mono border border-zinc-200 dark:border-zinc-800">
+                        <span className="text-muted-foreground">Customer Location</span><br/>
+                        Lat: {request.location_lat.toFixed(5)} <br/>
+                        Lng: {request.location_lng.toFixed(5)}
+                      </div>
+                      <div className="flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-500">
+                        <MapPin className="w-8 h-8 mb-2 opacity-50" />
+                        <p className="text-xs font-medium">Interactive Map (Coming in Phase 13)</p>
+                      </div>
                     </div>
 
                     {request.description && (
