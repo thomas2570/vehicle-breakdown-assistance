@@ -32,9 +32,19 @@ export async function acceptRequest(requestId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) return { error: 'Not authenticated' }
+  console.log(`[DEBUG] acceptRequest called. user.id: ${user.id}, requestId: ${requestId}`)
 
-  const { error } = await supabase
+  // 1. First, check if the request actually exists and what its current state is
+  const { data: currentReq, error: fetchErr } = await supabase
+    .from('breakdown_requests')
+    .select('*')
+    .eq('id', requestId)
+    .single()
+  
+  console.log(`[DEBUG] Current request state:`, currentReq, `Fetch error:`, fetchErr)
+
+  // 2. Attempt the update
+  const { data, error } = await supabase
     .from('breakdown_requests')
     .update({ 
       status: 'accepted',
@@ -42,9 +52,17 @@ export async function acceptRequest(requestId: string) {
     })
     .eq('id', requestId)
     .eq('status', 'pending') // Only accept if it's still pending
+    .select()
+    .single()
+
+  console.log(`[DEBUG] Update result - data:`, data, `error:`, error)
 
   if (error) {
     return { error: error.message }
+  }
+
+  if (!data) {
+    return { error: 'Failed to update: you might not have permission, or the request was already accepted.' }
   }
 
   revalidatePath('/mechanic')
@@ -58,14 +76,20 @@ export async function updateRequestStatus(requestId: string, newStatus: string) 
 
   if (!user) return { error: 'Not authenticated' }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('breakdown_requests')
     .update({ status: newStatus })
     .eq('id', requestId)
     .eq('mechanic_id', user.id)
+    .select()
+    .single()
 
   if (error) {
     return { error: error.message }
+  }
+
+  if (!data) {
+    return { error: 'Failed to update: you might not have permission, or the request was not found.' }
   }
 
   revalidatePath('/mechanic')

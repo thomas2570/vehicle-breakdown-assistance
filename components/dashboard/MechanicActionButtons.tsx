@@ -42,7 +42,7 @@ export function UpdateStatusButton({
   status: string, 
   label: string, 
   variant?: 'default' | 'amber' | 'green',
-  icon?: any
+  icon?: React.ElementType
 }) {
   const [isLoading, setIsLoading] = useState(false)
 
