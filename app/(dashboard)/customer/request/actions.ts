@@ -57,10 +57,10 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 export async function getNearbyMechanics(lat: number, lng: number) {
   const supabase = await createClient()
   
-  // Fetch all available mechanics with their phone number
+  // Fetch all available mechanics
   const { data: mechanics, error } = await supabase
     .from('mechanics')
-    .select('id, shop_name, current_lat, current_lng, profiles!inner(phone)')
+    .select('id, shop_name, current_lat, current_lng')
     .eq('is_available', true)
     .not('current_lat', 'is', null)
     .not('current_lng', 'is', null)
@@ -68,6 +68,15 @@ export async function getNearbyMechanics(lat: number, lng: number) {
   if (error || !mechanics) {
     return { error: 'Could not fetch mechanics', mechanics: [] }
   }
+
+  // Fetch phone numbers for these mechanics
+  const mechanicIds = mechanics.map(m => m.id)
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('id, phone')
+    .in('id', mechanicIds)
+
+  const phoneMap = new Map(profiles?.map(p => [p.id, p.phone]) || [])
 
   // Calculate distances and filter (e.g., within 50km radius)
   const mechanicsWithDistance = mechanics.map(mechanic => {
@@ -77,7 +86,7 @@ export async function getNearbyMechanics(lat: number, lng: number) {
       shop_name: mechanic.shop_name,
       current_lat: mechanic.current_lat,
       current_lng: mechanic.current_lng,
-      phone: (mechanic.profiles as any)?.phone,
+      phone: phoneMap.get(mechanic.id),
       distance
     }
   }).filter(m => m.distance <= 50)
