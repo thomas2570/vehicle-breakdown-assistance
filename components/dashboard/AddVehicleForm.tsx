@@ -26,11 +26,13 @@ export function AddVehicleForm() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" /> Add Vehicle
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger 
+        render={
+          <Button>
+            <Plus className="mr-2 h-4 w-4" /> Add Vehicle
+          </Button>
+        }
+      />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add a new vehicle</DialogTitle>
