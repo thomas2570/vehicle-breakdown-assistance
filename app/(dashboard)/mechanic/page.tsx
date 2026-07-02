@@ -79,7 +79,11 @@ export default async function MechanicDashboard() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <MechanicLiveFeed initialRequests={pendingRequests as any} />
+        <MechanicLiveFeed 
+          initialRequests={pendingRequests as any} 
+          mechanicLat={mechanic?.current_lat} 
+          mechanicLng={mechanic?.current_lng} 
+        />
       </div>
     </div>
   )

@@ -20,10 +20,32 @@ type PendingRequest = {
   profiles: { full_name: string } | null
 }
 
-export function MechanicLiveFeed({ initialRequests }: { initialRequests: PendingRequest[] }) {
+export function MechanicLiveFeed({ 
+  initialRequests,
+  mechanicLat,
+  mechanicLng
+}: { 
+  initialRequests: PendingRequest[],
+  mechanicLat?: number,
+  mechanicLng?: number 
+}) {
   const [requests, setRequests] = useState<PendingRequest[]>(initialRequests)
   const router = useRouter()
   const supabase = createClient()
+
+  // Calculate distance in kilometers between two lat/lng coordinates (Haversine formula)
+  const getDistance = (lat1: number, lon1: number, lat2?: number, lon2?: number) => {
+    if (!lat2 || !lon2) return null
+    const R = 6371 // Radius of the earth in km
+    const dLat = (lat2 - lat1) * (Math.PI / 180)
+    const dLon = (lon2 - lon1) * (Math.PI / 180)
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * 
+      Math.sin(dLon / 2) * Math.sin(dLon / 2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+    return R * c // Distance in km
+  }
 
   useEffect(() => {
     // Subscribe to ALL new breakdown requests that are inserted with 'pending' status
@@ -87,6 +109,14 @@ export function MechanicLiveFeed({ initialRequests }: { initialRequests: Pending
     }
   }, [router, supabase])
 
+  // Sort requests by distance if we have mechanic location
+  const sortedRequests = [...requests].sort((a, b) => {
+    const distA = getDistance(a.location_lat, a.location_lng, mechanicLat, mechanicLng)
+    const distB = getDistance(b.location_lat, b.location_lng, mechanicLat, mechanicLng)
+    if (distA !== null && distB !== null) return distA - distB
+    return 0
+  })
+
   return (
     <Card className="col-span-4 border-primary/20 shadow-lg shadow-primary/5">
       <CardHeader>
@@ -100,38 +130,42 @@ export function MechanicLiveFeed({ initialRequests }: { initialRequests: Pending
         <CardDescription>Live feed of stranded drivers looking for help right now.</CardDescription>
       </CardHeader>
       <CardContent>
-        {requests && requests.length > 0 ? (
+        {sortedRequests && sortedRequests.length > 0 ? (
           <div className="space-y-6">
-            {requests.map((request) => (
-              <div key={request.id} className="flex flex-col sm:flex-row sm:items-center p-4 border rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors gap-4">
-                <div className="bg-red-100 dark:bg-red-900/30 p-3 rounded-full shrink-0 self-start sm:self-center">
-                  <Clock className="h-6 w-6 text-red-600 dark:text-red-500" />
-                </div>
-                <div className="space-y-1 flex-1">
-                  <div className="flex justify-between items-start">
-                    <p className="font-semibold text-lg capitalize">{request.problem_type.replace('_', ' ')}</p>
-                    <span className="text-xs font-medium bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-400 px-2 py-1 rounded-full animate-pulse">
-                      URGENT
-                    </span>
+            {sortedRequests.map((request) => {
+              const distance = getDistance(request.location_lat, request.location_lng, mechanicLat, mechanicLng)
+              return (
+                <div key={request.id} className="flex flex-col sm:flex-row sm:items-center p-4 border rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors gap-4">
+                  <div className="bg-red-100 dark:bg-red-900/30 p-3 rounded-full shrink-0 self-start sm:self-center">
+                    <Clock className="h-6 w-6 text-red-600 dark:text-red-500" />
                   </div>
-                  <p className="text-sm">
-                    <span className="text-muted-foreground">Vehicle: </span>
-                    {request.vehicles?.make} {request.vehicles?.model}
-                  </p>
-                  <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-                    <MapPin className="w-4 h-4" /> Lat: {request.location_lat.toFixed(4)}, Lng: {request.location_lng.toFixed(4)}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Reported {new Date(request.created_at).toLocaleTimeString()}
-                  </p>
+                  <div className="space-y-1 flex-1">
+                    <div className="flex justify-between items-start">
+                      <p className="font-semibold text-lg capitalize">{request.problem_type.replace('_', ' ')}</p>
+                      <span className="text-xs font-medium bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-400 px-2 py-1 rounded-full animate-pulse">
+                        URGENT
+                      </span>
+                    </div>
+                    <p className="text-sm">
+                      <span className="text-muted-foreground">Vehicle: </span>
+                      {request.vehicles?.make} {request.vehicles?.model}
+                    </p>
+                    <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1 font-medium text-blue-600 dark:text-blue-400">
+                      <MapPin className="w-4 h-4" /> 
+                      {distance !== null ? `${distance.toFixed(1)} km away` : `Lat: ${request.location_lat.toFixed(4)}, Lng: ${request.location_lng.toFixed(4)}`}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Reported {new Date(request.created_at).toLocaleTimeString()}
+                    </p>
+                  </div>
+                  <div className="shrink-0 mt-4 sm:mt-0">
+                    <Link href="/mechanic/requests">
+                      <Button>Review & Accept</Button>
+                    </Link>
+                  </div>
                 </div>
-                <div className="shrink-0 mt-4 sm:mt-0">
-                  <Link href="/mechanic/requests">
-                    <Button>Review & Accept</Button>
-                  </Link>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         ) : (
           <div className="text-center py-12 text-muted-foreground border border-dashed rounded-xl">
