@@ -5,6 +5,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MapPin, User, Car, Clock, CheckCircle2, ArrowRight } from 'lucide-react'
 import { acceptRequest, updateRequestStatus } from '../actions'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function MechanicRequestsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
