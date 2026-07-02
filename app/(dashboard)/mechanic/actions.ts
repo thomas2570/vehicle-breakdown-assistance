@@ -32,6 +32,8 @@ export async function acceptRequest(requestId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  if (!user) return { error: 'Not authenticated' }
+
   console.log(`[DEBUG] acceptRequest called. user.id: ${user.id}, requestId: ${requestId}`)
 
   // 1. First, check if the request actually exists and what its current state is

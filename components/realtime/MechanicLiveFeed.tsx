@@ -99,7 +99,7 @@ export function MechanicLiveFeed({
             setRequests((prev) => [data as unknown as PendingRequest, ...prev])
           } else {
              // Fallback if join fails for some reason
-            setRequests((prev) => [payload.new as any, ...prev])
+            setRequests((prev) => [payload.new as unknown as PendingRequest, ...prev])
           }
           
           router.refresh()
@@ -124,7 +124,7 @@ export function MechanicLiveFeed({
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [router, supabase])
+  }, [router, supabase, currentMechanicId])
 
   // Sort requests by distance if we have mechanic location
   const sortedRequests = [...requests].sort((a, b) => {

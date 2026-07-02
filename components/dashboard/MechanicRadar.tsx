@@ -13,6 +13,7 @@ export interface RadarMechanic {
   phone?: string
   // Using an arbitrary angle for UI placement
   angle?: number
+  randomDelay?: number
 }
 
 interface MechanicRadarProps {
@@ -25,14 +26,19 @@ export function MechanicRadar({ mechanics: initialMechanics, selectedMechanicId,
   const [mechanics, setMechanics] = useState<RadarMechanic[]>([])
 
   useEffect(() => {
-    // Assign random angles for UI distribution around the center
-    // We would ideally calculate true bearing if we needed exact directions,
-    // but random angles give a good "scattered nearby" radar feel.
-    const mapped = initialMechanics.map((m, i) => ({
-      ...m,
-      angle: (360 / (initialMechanics.length || 1)) * i + Math.random() * 30
-    }))
-    setMechanics(mapped)
+    let isMounted = true
+    // Calculate randomized values asynchronously to avoid synchronous setState warnings
+    Promise.resolve().then(() => {
+      if (!isMounted) return
+      const mapped = initialMechanics.map((m, i) => ({
+        ...m,
+        angle: (360 / (initialMechanics.length || 1)) * i + Math.random() * 30,
+        randomDelay: Math.random()
+      }))
+      setMechanics(mapped)
+    })
+    
+    return () => { isMounted = false }
   }, [initialMechanics])
 
   // Map distance (0-50km) to percentage radius (20% to 100%)
@@ -99,7 +105,7 @@ export function MechanicRadar({ mechanics: initialMechanics, selectedMechanicId,
             key={mechanic.id}
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 1 + Math.random(), duration: 0.5 }}
+            transition={{ delay: 1 + (mechanic.randomDelay || 0), duration: 0.5 }}
             className="absolute z-10 flex flex-col items-center justify-center transform -translate-x-1/2 -translate-y-1/2"
             style={{ left: `${left}%`, top: `${top}%` }}
           >
@@ -110,7 +116,7 @@ export function MechanicRadar({ mechanics: initialMechanics, selectedMechanicId,
               <motion.div 
                 className={`absolute inset-0 rounded-full ${selectedMechanicId === mechanic.id ? 'bg-amber-500/60 blur-md' : 'bg-green-500/40 blur-sm'}`}
                 animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.6, 0.3] }}
-                transition={{ duration: 2, repeat: Infinity, delay: Math.random() * 2 }}
+                transition={{ duration: 2, repeat: Infinity, delay: (mechanic.randomDelay || 0) * 2 }}
               />
               <MapPin className={`w-6 h-6 relative z-10 ${selectedMechanicId === mechanic.id ? 'text-amber-400 drop-shadow-[0_0_12px_rgba(251,191,36,1)] scale-125 transition-transform' : 'text-green-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.8)]'}`} />
               
