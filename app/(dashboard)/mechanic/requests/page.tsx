@@ -10,20 +10,43 @@ export default async function MechanicRequestsPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   // Fetch all pending unassigned requests or requests assigned specifically to this mechanic
-  const { data: pendingRequests } = await supabase
+  const { data: pendingData } = await supabase
     .from('breakdown_requests')
-    .select('*, profiles:customer_id(full_name, phone), vehicles(make, model, license_plate)')
+    .select('*, vehicles(make, model, license_plate)')
     .eq('status', 'pending')
     .or(`mechanic_id.is.null,mechanic_id.eq.${user?.id}`)
     .order('created_at', { ascending: false })
 
   // Fetch active requests assigned to this mechanic
-  const { data: activeRequests } = await supabase
+  const { data: activeData } = await supabase
     .from('breakdown_requests')
-    .select('*, profiles:customer_id(full_name, phone), vehicles(make, model, license_plate)')
+    .select('*, vehicles(make, model, license_plate)')
     .eq('mechanic_id', user?.id)
     .in('status', ['accepted', 'en_route', 'in_progress'])
     .order('created_at', { ascending: false })
+
+  // Extract all customer IDs to fetch their profiles
+  const customerIds = new Set([
+    ...(pendingData || []).map(r => r.customer_id),
+    ...(activeData || []).map(r => r.customer_id)
+  ])
+
+  const { data: profilesData } = await supabase
+    .from('profiles')
+    .select('id, full_name, phone')
+    .in('id', Array.from(customerIds))
+
+  const profileMap = new Map(profilesData?.map(p => [p.id, p]) || [])
+
+  const pendingRequests = (pendingData || []).map(r => ({
+    ...r,
+    profiles: profileMap.get(r.customer_id)
+  }))
+
+  const activeRequests = (activeData || []).map(r => ({
+    ...r,
+    profiles: profileMap.get(r.customer_id)
+  }))
 
   return (
     <div className="space-y-6">
