@@ -26,7 +26,7 @@ export default async function MechanicRequestsPage() {
     .from('breakdown_requests')
     .select('*, vehicles(make, model, license_plate)')
     .eq('mechanic_id', user?.id)
-    .in('status', ['accepted', 'en_route', 'in_progress'])
+    .in('status', ['accepted', 'en_route', 'in_progress', 'completed'])
     .order('created_at', { ascending: false })
 
   // Extract all customer IDs to fetch their profiles
@@ -142,6 +142,11 @@ export default async function MechanicRequestsPage() {
                           variant="green"
                           icon={CheckCircle2}
                         />
+                      )}
+                      {request.status === 'completed' && (
+                        <div className="w-full text-center py-2 text-green-600 dark:text-green-500 font-medium flex items-center justify-center gap-2">
+                          <CheckCircle2 className="w-5 h-5" /> Completed Service
+                        </div>
                       )}
                     </div>
                   </CardFooter>

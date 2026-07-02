@@ -55,7 +55,7 @@ export function LiveTracker({
                 toast.info('Mechanic has arrived and started working.')
                 break
               case 'completed':
-                toast.success('Service completed successfully!')
+                toast.success('Request resolved successfully!')
                 break
               case 'cancelled':
                 toast.error('This request has been cancelled.')
@@ -118,7 +118,7 @@ export function LiveTracker({
       case 'completed':
         return {
           icon: <CheckCircle2 className="w-12 h-12 text-green-500" />,
-          title: 'Service Completed',
+          title: 'Request Resolved',
           desc: 'Your vehicle has been serviced. You can now process payment.',
           color: 'border-green-200 bg-green-50 dark:border-green-900/50 dark:bg-green-900/10'
         }
