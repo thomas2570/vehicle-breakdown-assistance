@@ -11,8 +11,22 @@ export function MechanicStatusToggle({ initialStatus }: { initialStatus: boolean
 
   const handleToggle = (checked: boolean) => {
     setIsAvailable(checked)
-    startTransition(async () => {
-      await toggleAvailability(checked)
+    
+    startTransition(() => {
+      if (checked && 'geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            await toggleAvailability(true, position.coords.latitude, position.coords.longitude)
+          },
+          async (error) => {
+            console.error('Error getting location:', error)
+            // Still set available even if location fails for now
+            await toggleAvailability(true)
+          }
+        )
+      } else {
+        toggleAvailability(false).then()
+      }
     })
   }
 

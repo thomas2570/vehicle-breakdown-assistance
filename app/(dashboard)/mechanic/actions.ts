@@ -3,15 +3,21 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function toggleAvailability(isAvailable: boolean) {
+export async function toggleAvailability(isAvailable: boolean, lat?: number, lng?: number) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) return { error: 'Not authenticated' }
 
+  const updateData: any = { is_available: isAvailable }
+  if (lat && lng) {
+    updateData.current_lat = lat
+    updateData.current_lng = lng
+  }
+
   const { error } = await supabase
     .from('mechanics')
-    .update({ is_available: isAvailable })
+    .update(updateData)
     .eq('id', user.id)
 
   if (error) {
