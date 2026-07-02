@@ -25,11 +25,11 @@ export function MechanicLiveFeed({
   mechanicLat,
   mechanicLng
 }: { 
-  initialRequests: PendingRequest[],
+  initialRequests: PendingRequest[] | null,
   mechanicLat?: number,
   mechanicLng?: number 
 }) {
-  const [requests, setRequests] = useState<PendingRequest[]>(initialRequests)
+  const [requests, setRequests] = useState<PendingRequest[]>(initialRequests || [])
   const router = useRouter()
   const supabase = createClient()
 
