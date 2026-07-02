@@ -12,8 +12,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-  DialogClose,
 } from "@/components/ui/dialog"
 
 export function CancelRequestButton({ requestId, className = "w-full mt-4" }: { requestId: string, className?: string }) {
@@ -35,17 +33,18 @@ export function CancelRequestButton({ requestId, className = "w-full mt-4" }: { 
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button 
-          variant="destructive" 
-          className={className}
-        >
-          <XCircle className="w-4 h-4 mr-2" />
-          Cancel Request
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+    <>
+      <Button 
+        variant="destructive" 
+        className={className}
+        onClick={() => setOpen(true)}
+      >
+        <XCircle className="w-4 h-4 mr-2" />
+        Cancel Request
+      </Button>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Cancel Breakdown Request</DialogTitle>
           <DialogDescription>
@@ -53,11 +52,9 @@ export function CancelRequestButton({ requestId, className = "w-full mt-4" }: { 
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex gap-2 sm:justify-end mt-4">
-          <DialogClose asChild>
-            <Button type="button" variant="outline" disabled={loading}>
-              Keep Request
-            </Button>
-          </DialogClose>
+          <Button type="button" variant="outline" disabled={loading} onClick={() => setOpen(false)}>
+            Keep Request
+          </Button>
           <Button 
             type="button" 
             variant="destructive" 
@@ -74,6 +71,7 @@ export function CancelRequestButton({ requestId, className = "w-full mt-4" }: { 
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    </>
   )
 }
 
