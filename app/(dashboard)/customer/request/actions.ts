@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
 
 export async function submitBreakdownRequest(formData: FormData) {
   const supabase = await createClient()
@@ -77,4 +78,25 @@ export async function getNearbyMechanics(lat: number, lng: number) {
     .slice(0, 10); // Return up to 10 nearest mechanics
 
   return { mechanics: mechanicsWithDistance }
+}
+
+export async function cancelBreakdownRequest(requestId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return { error: 'Not authenticated' }
+
+  const { error } = await supabase
+    .from('breakdown_requests')
+    .update({ status: 'cancelled' })
+    .eq('id', requestId)
+    .eq('customer_id', user.id) // Ensure they own the request
+    .in('status', ['pending', 'accepted']) // Only allow cancel if not en route/in progress? Or maybe anytime? Let's say pending/accepted.
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath(`/customer/request/${requestId}`)
+  return { success: true }
 }

@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { MapPin, Navigation, User, Phone } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import { LiveTracker } from '@/components/realtime/LiveTracker'
+import { CancelRequestButton } from '@/components/dashboard/CancelRequestButton'
 
 export default async function RequestTrackingPage({ params }: { params: { id: string } }) {
   const supabase = await createClient()
@@ -45,6 +46,10 @@ export default async function RequestTrackingPage({ params }: { params: { id: st
                 <span className="text-sm text-muted-foreground">Issue</span>
                 <p className="font-medium capitalize">{request.problem_type.replace('_', ' ')}</p>
               </div>
+              
+              {(request.status === 'pending' || request.status === 'accepted') && (
+                <CancelRequestButton requestId={request.id} />
+              )}
             </CardContent>
           </Card>
         </div>
