@@ -35,3 +35,46 @@ export async function submitBreakdownRequest(formData: FormData) {
 
   redirect(`/customer/request/${data.id}`)
 }
+
+// Helper to calculate distance in km using Haversine formula
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371; // Radius of the earth in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;  
+  const dLon = (lon2 - lon1) * Math.PI / 180; 
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2); 
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+  const d = R * c; // Distance in km
+  return d;
+}
+
+export async function getNearbyMechanics(lat: number, lng: number) {
+  const supabase = await createClient()
+  
+  // Fetch all available mechanics
+  const { data: mechanics, error } = await supabase
+    .from('mechanics')
+    .select('id, shop_name, current_lat, current_lng')
+    .eq('is_available', true)
+    .not('current_lat', 'is', null)
+    .not('current_lng', 'is', null)
+
+  if (error || !mechanics) {
+    return { error: 'Could not fetch mechanics', mechanics: [] }
+  }
+
+  // Calculate distances and filter (e.g., within 50km radius)
+  const mechanicsWithDistance = mechanics.map(mechanic => {
+    const distance = calculateDistance(lat, lng, mechanic.current_lat!, mechanic.current_lng!);
+    return {
+      ...mechanic,
+      distance
+    }
+  }).filter(m => m.distance <= 50)
+    .sort((a, b) => a.distance - b.distance)
+    .slice(0, 10); // Return up to 10 nearest mechanics
+
+  return { mechanics: mechanicsWithDistance }
+}

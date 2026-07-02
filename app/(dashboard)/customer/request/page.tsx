@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { submitBreakdownRequest } from './actions'
+import { getNearbyMechanics, submitBreakdownRequest } from './actions'
 import { createClient } from '@/lib/supabase/client'
 import { MapPin, Navigation, Car, AlertTriangle } from 'lucide-react'
+import { MechanicRadar, RadarMechanic } from '@/components/dashboard/MechanicRadar'
 
 const problems = [
   { id: 'flat_tyre', label: 'Flat Tyre' },
@@ -28,6 +29,8 @@ export default function RequestHelpPage() {
   const [location, setLocation] = useState<{lat: number, lng: number} | null>(null)
   const [locationLoading, setLocationLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [nearbyMechanics, setNearbyMechanics] = useState<RadarMechanic[]>([])
+  const [radarLoading, setRadarLoading] = useState(false)
   
   useEffect(() => {
     const fetchVehicles = async () => {
@@ -45,12 +48,18 @@ export default function RequestHelpPage() {
     setLocationLoading(true)
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          })
+        async (position) => {
+          const lat = position.coords.latitude
+          const lng = position.coords.longitude
+          setLocation({ lat, lng })
           setLocationLoading(false)
+          
+          setRadarLoading(true)
+          const { mechanics } = await getNearbyMechanics(lat, lng)
+          if (mechanics) {
+            setNearbyMechanics(mechanics as RadarMechanic[])
+          }
+          setRadarLoading(false)
         },
         (error) => {
           setError("Failed to get location. Please enable location services.")
@@ -78,7 +87,7 @@ export default function RequestHelpPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-red-600 dark:text-red-500 flex items-center gap-2">
           <AlertTriangle className="w-8 h-8" />
@@ -87,7 +96,8 @@ export default function RequestHelpPage() {
         <p className="text-muted-foreground mt-2">Fill out the details below. We will find the nearest mechanic to assist you immediately.</p>
       </div>
 
-      <Card>
+      <div className={`grid gap-6 ${location ? 'lg:grid-cols-2' : 'max-w-3xl'}`}>
+        <Card>
         <CardHeader>
           <CardTitle>Breakdown Details</CardTitle>
           <CardDescription>Tell us what happened and where you are.</CardDescription>
@@ -171,6 +181,27 @@ export default function RequestHelpPage() {
           </form>
         </CardContent>
       </Card>
+
+      {location && (
+        <div className="space-y-4">
+          <Card className="h-full">
+            <CardHeader>
+              <CardTitle>Nearby Assistance</CardTitle>
+              <CardDescription>Scanning your area for active mechanics...</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {radarLoading ? (
+                <div className="w-full h-[300px] md:h-[400px] flex items-center justify-center bg-zinc-950 rounded-2xl border border-zinc-800">
+                  <Navigation className="w-8 h-8 animate-spin text-green-500" />
+                </div>
+              ) : (
+                <MechanicRadar mechanics={nearbyMechanics} />
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      </div>
     </div>
   )
 }
