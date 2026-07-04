@@ -11,18 +11,16 @@ export async function addVehicle(formData: FormData) {
 
   const make = formData.get('make') as string
   const model = formData.get('model') as string
-  const year = parseInt(formData.get('year') as string) || null
-  const license_plate = formData.get('license_plate') as string
-  const color = formData.get('color') as string
+  const vehicle_type = formData.get('vehicle_type') as string || 'car'
+  const registration_number = formData.get('registration_number') as string
 
   const { error } = await supabase.from('vehicles').insert({
-    user_id: user.id,
+    owner_id: user.id,
     make,
     model,
-    year,
-    license_plate,
-    color
-  })
+    vehicle_type,
+    registration_number
+  } as any)
 
   if (error) {
     return { error: error.message }

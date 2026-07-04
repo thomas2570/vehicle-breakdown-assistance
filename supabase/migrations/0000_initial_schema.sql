@@ -319,3 +319,32 @@ BEGIN
     ORDER BY distance_km ASC;
 END;
 $$;
+
+-- Trigger to create profile after user sign-up
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.profiles (id, full_name, phone, role)
+  VALUES (
+    new.id,
+    new.raw_user_meta_data->>'full_name',
+    new.raw_user_meta_data->>'phone',
+    new.raw_user_meta_data->>'role'
+  );
+  
+  -- If mechanic, create a mechanic record
+  IF new.raw_user_meta_data->>'role' = 'mechanic' THEN
+    INSERT INTO public.mechanics (id, shop_name)
+    VALUES (
+      new.id,
+      new.raw_user_meta_data->>'shop_name'
+    );
+  END IF;
+
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();

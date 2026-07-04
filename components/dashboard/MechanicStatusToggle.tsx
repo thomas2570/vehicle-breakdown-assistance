@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
-import { toggleAvailability } from '@/app/(dashboard)/mechanic/actions'
+import { toggleAvailability } from '@/app/mechanic/dashboard/actions'
 
 export function MechanicStatusToggle({ initialStatus }: { initialStatus: boolean }) {
   const [isAvailable, setIsAvailable] = useState(initialStatus)

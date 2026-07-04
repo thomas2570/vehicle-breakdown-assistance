@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MapPin, User, Car, Clock, CheckCircle2, ArrowRight } from 'lucide-react'
 import { acceptRequest, updateRequestStatus } from '../actions'
 import { AcceptJobButton, UpdateStatusButton } from '@/components/dashboard/MechanicActionButtons'
+import DynamicMap from '@/components/realtime/DynamicMap'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -16,23 +17,27 @@ export default async function MechanicRequestsPage() {
   // Fetch all pending unassigned requests or requests assigned specifically to this mechanic
   const { data: pendingData } = await supabase
     .from('breakdown_requests')
-    .select('*, vehicles(make, model, license_plate)')
+    .select('*, vehicles(make, model, registration_number)')
     .eq('status', 'pending')
-    .or(`mechanic_id.is.null,mechanic_id.eq.${user?.id}`)
+    .or(`mechanic_id.is.null,mechanic_id.eq.${(user?.id as string)}`)
     .order('created_at', { ascending: false })
+    
+  const pendingRequestsData = pendingData as any[]
 
   // Fetch active requests assigned to this mechanic
   const { data: activeData } = await supabase
     .from('breakdown_requests')
-    .select('*, vehicles(make, model, license_plate)')
-    .eq('mechanic_id', user?.id)
+    .select('*, vehicles(make, model, registration_number)')
+    .eq('mechanic_id', (user?.id as string))
     .in('status', ['accepted', 'en_route', 'in_progress', 'completed'])
     .order('created_at', { ascending: false })
+    
+  const activeRequestsData = activeData as any[]
 
   // Extract all customer IDs to fetch their profiles
   const customerIds = new Set([
-    ...(pendingData || []).map(r => r.customer_id),
-    ...(activeData || []).map(r => r.customer_id)
+    ...(pendingRequestsData || []).map(r => r.customer_id),
+    ...(activeRequestsData || []).map(r => r.customer_id)
   ])
 
   const { data: profilesData } = await supabase
@@ -40,17 +45,17 @@ export default async function MechanicRequestsPage() {
     .select('id, full_name, phone')
     .in('id', Array.from(customerIds))
 
-  const profileMap = new Map(profilesData?.map(p => [p.id, p]) || [])
+  const profileMap = new Map((profilesData as any[])?.map(p => [p.id, p]) || [])
 
-  const pendingRequests = (pendingData || []).map(r => ({
+  const pendingRequests = (pendingRequestsData || []).map(r => ({
     ...r,
     profiles: profileMap.get(r.customer_id)
-  }))
+  })) as any[]
 
-  const activeRequests = (activeData || []).map(r => ({
+  const activeRequests = (activeRequestsData || []).map(r => ({
     ...r,
     profiles: profileMap.get(r.customer_id)
-  }))
+  })) as any[]
 
   return (
     <div className="space-y-6">
@@ -94,20 +99,29 @@ export default async function MechanicRequestsPage() {
                       <div className="space-y-1">
                         <span className="text-muted-foreground flex items-center gap-1"><Car className="w-3 h-3"/> Vehicle</span>
                         <p className="font-medium">{request.vehicles?.make} {request.vehicles?.model}</p>
-                        <p className="text-muted-foreground font-mono">{request.vehicles?.license_plate}</p>
+                        <p className="text-muted-foreground font-mono">{request.vehicles?.registration_number}</p>
                       </div>
                     </div>
                     
-                    <div className="mt-4 w-full h-48 bg-zinc-200 dark:bg-zinc-950/50 rounded-xl relative overflow-hidden flex items-center justify-center border border-zinc-300 dark:border-zinc-800">
-                      <div className="absolute top-2 left-2 bg-white/90 dark:bg-zinc-900/90 backdrop-blur p-2 rounded shadow-sm text-xs font-mono border border-zinc-200 dark:border-zinc-800">
+                    <div className="mt-4 w-full h-48 rounded-xl relative overflow-hidden flex items-center justify-center border border-zinc-300 dark:border-zinc-800">
+                      <div className="absolute top-2 left-2 bg-white/90 dark:bg-zinc-900/90 backdrop-blur p-2 rounded shadow-sm text-xs font-mono border border-zinc-200 dark:border-zinc-800 z-[400]">
                         <span className="text-muted-foreground">Customer Location</span><br/>
-                        Lat: {request.location_lat.toFixed(5)} <br/>
-                        Lng: {request.location_lng.toFixed(5)}
+                        Lat: {request.lat?.toFixed(5)} <br/>
+                        Lng: {request.lng?.toFixed(5)}
                       </div>
-                      <div className="flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-500">
-                        <MapPin className="w-8 h-8 mb-2 opacity-50" />
-                        <p className="text-xs font-medium">Interactive Map (Coming in Phase 13)</p>
-                      </div>
+                      <DynamicMap 
+                        center={[request.lat || 0, request.lng || 0]} 
+                        zoom={14} 
+                        interactive={false}
+                        markers={[
+                          {
+                            id: request.id,
+                            position: [request.lat || 0, request.lng || 0],
+                            title: 'Customer Location',
+                            popup: `${request.profiles?.full_name} - ${request.vehicles?.make} ${request.vehicles?.model}`
+                          }
+                        ]}
+                      />
                     </div>
 
                     {request.description && (
@@ -191,7 +205,7 @@ export default async function MechanicRequestsPage() {
                     
                     <div className="p-3 bg-zinc-100 dark:bg-zinc-900 rounded-md">
                       <span className="text-sm text-muted-foreground flex items-center gap-1 mb-1"><MapPin className="w-3 h-3"/> Location</span>
-                      <p className="text-sm font-medium">Lat: {request.location_lat.toFixed(5)}, Lng: {request.location_lng.toFixed(5)}</p>
+                      <p className="text-sm font-medium">Lat: {request.lat?.toFixed(5)}, Lng: {request.lng?.toFixed(5)}</p>
                     </div>
                   </CardContent>
                   <CardFooter className="border-t pt-4">

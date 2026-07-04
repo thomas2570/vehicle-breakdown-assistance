@@ -7,11 +7,13 @@ export default async function HistoryPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: requests } = await supabase
+  const { data } = await supabase
     .from('breakdown_requests')
     .select('*, mechanics(shop_name), vehicles(make, model)')
-    .eq('customer_id', user?.id)
+    .eq('customer_id', (user?.id as string))
     .order('created_at', { ascending: false })
+    
+  const requests = data as any[]
 
   return (
     <div className="space-y-6">
@@ -43,7 +45,7 @@ export default async function HistoryPage() {
                       Vehicle: {request.vehicles?.make} {request.vehicles?.model}
                     </p>
                     <p className="text-sm text-muted-foreground flex items-center gap-1">
-                      <MapPin className="w-3 h-3" /> Lat: {request.location_lat.toFixed(4)}, Lng: {request.location_lng.toFixed(4)}
+                      <MapPin className="w-3 h-3" /> Lat: {request.lat?.toFixed(4)}, Lng: {request.lng?.toFixed(4)}
                     </p>
                   </div>
                   <div className="text-right">

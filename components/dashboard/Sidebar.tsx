@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Car, LayoutDashboard, Settings, LogOut, FileClock, PenTool, Users, Wrench } from 'lucide-react'
-import { signout } from '@/app/(auth)/actions'
+import { signout } from '@/features/auth/actions'
 
 const customerLinks = [
   { href: '/customer', label: 'Dashboard', icon: LayoutDashboard },

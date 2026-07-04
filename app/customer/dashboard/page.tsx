@@ -9,18 +9,20 @@ export default async function CustomerDashboard() {
   const { data: { user } } = await supabase.auth.getUser()
 
   // Fetch recent requests
-  const { data: requests } = await supabase
+  const { data } = await supabase
     .from('breakdown_requests')
     .select('*, mechanics(shop_name)')
-    .eq('customer_id', user?.id)
+    .eq('customer_id', (user?.id as string))
     .order('created_at', { ascending: false })
     .limit(3)
+    
+  const requests = data as any[]
 
   // Fetch vehicles count
   const { count: vehiclesCount } = await supabase
     .from('vehicles')
     .select('*', { count: 'exact', head: true })
-    .eq('user_id', user?.id)
+    .eq('owner_id', (user?.id as string))
 
   return (
     <div className="space-y-8">
@@ -78,7 +80,7 @@ export default async function CustomerDashboard() {
                     <div className="space-y-1 flex-1">
                       <p className="text-sm font-medium leading-none capitalize">{request.problem_type.replace('_', ' ')}</p>
                       <p className="text-sm text-muted-foreground flex items-center gap-1">
-                        <MapPin className="w-3 h-3" /> Lat: {request.location_lat.toFixed(4)}, Lng: {request.location_lng.toFixed(4)}
+                        <MapPin className="w-3 h-3" /> Lat: {request.lat?.toFixed(4)}, Lng: {request.lng?.toFixed(4)}
                       </p>
                     </div>
                     <div className="text-right">

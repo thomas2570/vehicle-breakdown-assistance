@@ -6,10 +6,12 @@ import { MapPin } from 'lucide-react'
 export default async function AdminJobsPage() {
   const supabase = await createClient()
 
-  const { data: jobs } = await supabase
+  const { data } = await supabase
     .from('breakdown_requests')
     .select('*, profiles:customer_id(full_name), mechanics:mechanic_id(shop_name)')
     .order('created_at', { ascending: false })
+    
+  const jobs = data as any[]
 
   return (
     <div className="space-y-6">

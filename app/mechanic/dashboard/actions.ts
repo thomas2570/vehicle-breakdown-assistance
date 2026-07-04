@@ -17,7 +17,7 @@ export async function toggleAvailability(isAvailable: boolean, lat?: number, lng
 
   const { error } = await supabase
     .from('mechanics')
-    .update(updateData)
+    .update(updateData as never)
     .eq('id', user.id)
 
   if (error) {
@@ -51,7 +51,7 @@ export async function acceptRequest(requestId: string) {
     .update({ 
       status: 'accepted',
       mechanic_id: user.id
-    })
+    } as never)
     .eq('id', requestId)
     .eq('status', 'pending') // Only accept if it's still pending
     .select()
@@ -80,7 +80,7 @@ export async function updateRequestStatus(requestId: string, newStatus: string) 
 
   const { data, error } = await supabase
     .from('breakdown_requests')
-    .update({ status: newStatus })
+    .update({ status: newStatus } as never)
     .eq('id', requestId)
     .eq('mechanic_id', user.id)
     .select()

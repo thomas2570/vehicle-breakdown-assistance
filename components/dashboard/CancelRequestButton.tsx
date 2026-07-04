@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { cancelBreakdownRequest } from '@/app/(dashboard)/customer/request/actions'
+import { cancelBreakdownRequest } from '@/app/customer/dashboard/request/actions'
 import { Loader2, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import {

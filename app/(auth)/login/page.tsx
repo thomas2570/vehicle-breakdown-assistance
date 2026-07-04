@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { login } from '../actions'
+import { login } from '@/features/auth/actions'
 import Link from 'next/link'
 
 export default function LoginPage() {

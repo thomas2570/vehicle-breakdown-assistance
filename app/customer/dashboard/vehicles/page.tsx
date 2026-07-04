@@ -9,11 +9,13 @@ export default async function VehiclesPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: vehicles } = await supabase
+  const { data } = await supabase
     .from('vehicles')
     .select('*')
-    .eq('user_id', user?.id)
+    .eq('owner_id', (user?.id as string))
     .order('created_at', { ascending: false })
+    
+  const vehicles = data as any[]
 
   return (
     <div className="space-y-6">
@@ -37,13 +39,13 @@ export default async function VehiclesPage() {
                   </div>
                   <div>
                     <CardTitle className="text-lg">{vehicle.make} {vehicle.model}</CardTitle>
-                    <CardDescription>{vehicle.year} • {vehicle.color}</CardDescription>
+                    <CardDescription className="capitalize">{vehicle.vehicle_type}</CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="mt-4 p-3 bg-zinc-100 dark:bg-zinc-800 rounded-md border border-zinc-200 dark:border-zinc-700 text-center font-mono font-bold tracking-widest uppercase">
-                  {vehicle.license_plate}
+                  {vehicle.registration_number}
                 </div>
                 <div className="mt-4 flex gap-2">
                   <form action={async () => {

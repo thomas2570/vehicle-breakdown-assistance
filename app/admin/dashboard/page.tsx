@@ -9,12 +9,12 @@ export default async function AdminDashboard() {
 
   // Fetch counts
   const { count: customersCount } = await supabase
-    .from('users')
+    .from('profiles')
     .select('*', { count: 'exact', head: true })
     .eq('role', 'customer')
 
   const { count: mechanicsCount } = await supabase
-    .from('users')
+    .from('profiles')
     .select('*', { count: 'exact', head: true })
     .eq('role', 'mechanic')
 
@@ -29,11 +29,13 @@ export default async function AdminDashboard() {
     .eq('status', 'completed')
 
   // Fetch recent requests globally
-  const { data: recentRequests } = await supabase
+  const { data } = await supabase
     .from('breakdown_requests')
     .select('*, profiles:customer_id(full_name), mechanics:mechanic_id(shop_name)')
     .order('created_at', { ascending: false })
     .limit(5)
+    
+  const recentRequests = data as any[]
 
   return (
     <div className="space-y-8">

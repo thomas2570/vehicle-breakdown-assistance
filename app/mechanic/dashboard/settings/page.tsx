@@ -8,11 +8,13 @@ export default async function MechanicSettingsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: mechanic } = await supabase
+  const { data } = await supabase
     .from('mechanics')
     .select('*')
-    .eq('id', user?.id)
+    .eq('id', (user?.id as string))
     .single()
+    
+  const mechanic = data as any
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -34,7 +36,7 @@ export default async function MechanicSettingsPage() {
           <div className="space-y-2">
             <Label>Verification Status</Label>
             <div className="p-3 bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-500 rounded-md font-medium capitalize border border-amber-200 dark:border-amber-900">
-              {mechanic?.verification_status || 'Pending'}
+              {mechanic?.is_verified ? 'Verified' : 'Pending'}
             </div>
             <p className="text-xs text-muted-foreground">Admin verification is required to access premium features.</p>
           </div>

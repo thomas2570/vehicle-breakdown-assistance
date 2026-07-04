@@ -4,6 +4,7 @@ import { MapPin, Navigation, User, Phone } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import { LiveTracker } from '@/components/realtime/LiveTracker'
 import { CancelRequestButton } from '@/components/dashboard/CancelRequestButton'
+import DynamicMap from '@/components/realtime/DynamicMap'
 
 export default async function RequestTrackingPage({ params }: { params: { id: string } }) {
   const supabase = await createClient()
@@ -12,11 +13,13 @@ export default async function RequestTrackingPage({ params }: { params: { id: st
 
   if (!user) redirect('/login')
 
-  const { data: request } = await supabase
+  const { data } = await supabase
     .from('breakdown_requests')
-    .select('*, mechanics(shop_name, current_lat, current_lng), vehicles(make, model, license_plate)')
+    .select('*, mechanics(shop_name, current_lat, current_lng), vehicles(make, model, registration_number)')
     .eq('id', id)
     .single()
+    
+  const request = data as any
 
   if (!request) {
     return <div>Request not found</div>
@@ -40,7 +43,7 @@ export default async function RequestTrackingPage({ params }: { params: { id: st
             <CardContent className="space-y-4">
               <div>
                 <span className="text-sm text-muted-foreground">Vehicle</span>
-                <p className="font-medium">{request.vehicles?.make} {request.vehicles?.model} ({request.vehicles?.license_plate})</p>
+                <p className="font-medium">{request.vehicles?.make} {request.vehicles?.model} ({request.vehicles?.registration_number})</p>
               </div>
               <div>
                 <span className="text-sm text-muted-foreground">Issue</span>
@@ -61,16 +64,20 @@ export default async function RequestTrackingPage({ params }: { params: { id: st
               <CardDescription>Your location and the mechanic's location</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="w-full h-96 bg-zinc-100 dark:bg-zinc-800 rounded-xl relative overflow-hidden flex items-center justify-center border">
-                {/* We will integrate Leaflet Map here in Phase 13 */}
-                <div className="absolute top-4 left-4 bg-white dark:bg-zinc-900 p-2 rounded-lg shadow text-xs font-mono border">
-                  Lat: {request.location_lat.toFixed(4)} <br/>
-                  Lng: {request.location_lng.toFixed(4)}
-                </div>
-                <div className="flex flex-col items-center justify-center text-muted-foreground">
-                  <MapPin className="w-12 h-12 text-zinc-300 mb-2" />
-                  <p>Interactive Map (Coming in Phase 13)</p>
-                </div>
+              <div className="w-full h-96 rounded-xl relative overflow-hidden border">
+                <DynamicMap 
+                  center={[request.lat, request.lng]} 
+                  zoom={15} 
+                  interactive={false} 
+                  markers={[
+                    { id: 'customer', position: [request.lat, request.lng], title: 'Your Location' },
+                    ...(request.mechanics?.current_lat && request.mechanics?.current_lng ? [{
+                      id: 'mechanic',
+                      position: [request.mechanics.current_lat, request.mechanics.current_lng] as [number, number],
+                      title: request.mechanics.shop_name || 'Mechanic'
+                    }] : [])
+                  ]} 
+                />
               </div>
             </CardContent>
           </Card>

@@ -70,7 +70,7 @@ export function LiveTracker({
                 .eq('id', payload.new.mechanic_id)
                 .single()
               
-              if (data) setMechanicName(data.shop_name)
+              if (data) setMechanicName((data as any).shop_name)
             }
 
             // Tell Next.js router to refresh server state behind the scenes

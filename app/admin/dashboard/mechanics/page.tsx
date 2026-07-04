@@ -9,10 +9,12 @@ export default async function AdminMechanicsPage() {
   const supabase = await createClient()
 
   // Fetch mechanics and their user profiles
-  const { data: mechanics } = await supabase
+  const { data } = await supabase
     .from('mechanics')
-    .select('*, users:id(email, created_at), profiles:id(full_name, phone)')
-    .order('verification_status', { ascending: false }) // Show pending first usually, but we sort alphabetically here
+    .select('*, profiles:id(full_name, phone)')
+    .order('is_verified', { ascending: false }) // Show pending first usually, but we sort alphabetically here
+    
+  const mechanics = data as any[]
 
   return (
     <div className="space-y-6">
@@ -51,18 +53,15 @@ export default async function AdminMechanicsPage() {
                     </TableCell>
                     <TableCell>
                       <div className={`flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-full w-fit ${
-                        mechanic.verification_status === 'verified' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                        mechanic.verification_status === 'rejected' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                        mechanic.is_verified ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
                         'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
                       }`}>
-                        {mechanic.verification_status === 'verified' && <CheckCircle2 className="w-3 h-3" />}
-                        {mechanic.verification_status === 'rejected' && <XCircle className="w-3 h-3" />}
-                        {mechanic.verification_status === 'pending' && <Clock className="w-3 h-3" />}
-                        {mechanic.verification_status.toUpperCase()}
+                        {mechanic.is_verified ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                        {mechanic.is_verified ? 'VERIFIED' : 'PENDING'}
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      {mechanic.verification_status === 'pending' ? (
+                      {!mechanic.is_verified ? (
                         <div className="flex justify-end gap-2">
                           <form action={async () => {
                             'use server'
@@ -80,10 +79,10 @@ export default async function AdminMechanicsPage() {
                       ) : (
                         <form action={async () => {
                           'use server'
-                          await verifyMechanic(mechanic.id, mechanic.verification_status === 'verified' ? 'rejected' : 'verified')
+                          await verifyMechanic(mechanic.id, 'rejected')
                         }}>
                           <Button size="sm" variant="outline">
-                            {mechanic.verification_status === 'verified' ? 'Revoke' : 'Re-Approve'}
+                            Revoke
                           </Button>
                         </form>
                       )}

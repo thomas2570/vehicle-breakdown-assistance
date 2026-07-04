@@ -10,11 +10,13 @@ export async function verifyMechanic(mechanicId: string, status: 'verified' | 'r
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
   
-  const { data: userData } = await supabase
-    .from('users')
+  const { data } = await supabase
+    .from('profiles')
     .select('role')
     .eq('id', user.id)
     .single()
+    
+  const userData = data as { role: string } | null;
     
   if (userData?.role !== 'admin') {
     return { error: 'Unauthorized: Admin access required' }
@@ -23,7 +25,8 @@ export async function verifyMechanic(mechanicId: string, status: 'verified' | 'r
   // Update mechanic verification status
   const { error } = await supabase
     .from('mechanics')
-    .update({ verification_status: status })
+    // @ts-ignore: TypeScript infers update as never due to complex Supabase generics
+    .update({ is_verified: status === 'verified' } as any)
     .eq('id', mechanicId)
 
   if (error) {

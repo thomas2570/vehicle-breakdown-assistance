@@ -13,8 +13,8 @@ import { Clock, MapPin, Navigation } from 'lucide-react'
 type PendingRequest = {
   id: string
   problem_type: string
-  location_lat: number
-  location_lng: number
+  lat: number
+  lng: number
   mechanic_id: string | null
   created_at: string
   vehicles: { make: string; model: string } | null
@@ -128,8 +128,8 @@ export function MechanicLiveFeed({
 
   // Sort requests by distance if we have mechanic location
   const sortedRequests = [...requests].sort((a, b) => {
-    const distA = getDistance(a.location_lat, a.location_lng, mechanicLat, mechanicLng)
-    const distB = getDistance(b.location_lat, b.location_lng, mechanicLat, mechanicLng)
+    const distA = getDistance(a.lat, a.lng, mechanicLat, mechanicLng)
+    const distB = getDistance(b.lat, b.lng, mechanicLat, mechanicLng)
     if (distA !== null && distB !== null) return distA - distB
     return 0
   })
@@ -150,7 +150,7 @@ export function MechanicLiveFeed({
         {sortedRequests && sortedRequests.length > 0 ? (
           <div className="space-y-6">
             {sortedRequests.map((request) => {
-              const distance = getDistance(request.location_lat, request.location_lng, mechanicLat, mechanicLng)
+              const distance = getDistance(request.lat, request.lng, mechanicLat, mechanicLng)
               const isDirectRequest = request.mechanic_id === currentMechanicId
               return (
                 <div key={request.id} className={`flex flex-col sm:flex-row sm:items-center p-4 border rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors gap-4 ${isDirectRequest ? 'border-amber-500 bg-amber-50/50 dark:bg-amber-950/20 shadow-sm shadow-amber-500/20' : ''}`}>
@@ -170,7 +170,7 @@ export function MechanicLiveFeed({
                     </p>
                     <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1 font-medium text-blue-600 dark:text-blue-400">
                       <MapPin className="w-4 h-4" /> 
-                      {distance !== null ? `${distance.toFixed(1)} km away` : `Lat: ${request.location_lat.toFixed(4)}, Lng: ${request.location_lng.toFixed(4)}`}
+                      {distance !== null ? `${distance.toFixed(1)} km away` : `Lat: ${request.lat.toFixed(4)}, Lng: ${request.lng.toFixed(4)}`}
                     </p>
                     <p className="text-xs text-muted-foreground mt-2">
                       Reported {new Date(request.created_at).toLocaleTimeString()}

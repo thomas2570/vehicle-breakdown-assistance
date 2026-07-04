@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuGroup,
 } from '@/components/ui/dropdown-menu'
-import { signout } from '@/app/(auth)/actions'
+import { signout } from '@/features/auth/actions'
 
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 

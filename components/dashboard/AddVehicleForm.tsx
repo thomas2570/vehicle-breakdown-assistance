@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
-import { addVehicle } from '@/app/(dashboard)/customer/vehicles/actions'
+import { addVehicle } from '@/app/customer/dashboard/vehicles/actions'
 
 export function AddVehicleForm() {
   const [open, setOpen] = useState(false)
@@ -98,17 +98,23 @@ export function AddVehicleForm() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="year">Year</Label>
-              <Input id="year" name="year" type="number" min="1990" max={new Date().getFullYear() + 1} placeholder="e.g. 2020" />
+              <Label htmlFor="vehicle_type">Vehicle Type</Label>
+              <select 
+                id="vehicle_type" 
+                name="vehicle_type" 
+                required 
+                className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="car">Car</option>
+                <option value="bike">Bike</option>
+                <option value="truck">Truck</option>
+                <option value="other">Other</option>
+              </select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="color">Color</Label>
-              <Input id="color" name="color" list="car-colors" placeholder="e.g. Silver" />
+              <Label htmlFor="registration_number">Registration Number</Label>
+              <Input id="registration_number" name="registration_number" placeholder="e.g. ABC-1234" required className="uppercase" />
             </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="license_plate">License Plate</Label>
-            <Input id="license_plate" name="license_plate" placeholder="e.g. ABC-1234" required className="uppercase" />
           </div>
           <Button type="submit" className="w-full">Save Vehicle</Button>
         </form>

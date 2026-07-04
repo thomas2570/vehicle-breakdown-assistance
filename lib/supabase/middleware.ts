@@ -1,12 +1,13 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { Database } from '@/types/database.types'
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   })
 
-  const supabase = createServerClient(
+  const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -15,7 +16,10 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+          supabaseResponse = NextResponse.next({
+            request,
+          })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           )
@@ -26,55 +30,47 @@ export async function updateSession(request: NextRequest) {
 
   // IMPORTANT: Avoid writing any logic between createServerClient and
   // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with cross-browser cookies.
+  // issues with users being randomly logged out.
+
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const pathname = request.nextUrl.pathname
-  
-  if (
-    !user &&
-    (pathname.startsWith('/customer') || pathname.startsWith('/mechanic') || pathname.startsWith('/admin'))
-  ) {
+  const url = request.nextUrl.clone()
+  const isAuthRoute = url.pathname.startsWith('/login') || url.pathname.startsWith('/register')
+
+  if (!user && !isAuthRoute && url.pathname !== '/') {
     // no user, potentially respond by redirecting the user to the login page
-    const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
-  // Basic Role-Based Redirection logic
-  if (user && (pathname === '/login' || pathname === '/register' || pathname === '/')) {
-    const role = user.user_metadata?.role || 'customer'
-    const url = request.nextUrl.clone()
-    
-    if (role === 'admin') url.pathname = '/admin'
-    else if (role === 'mechanic') url.pathname = '/mechanic'
-    else url.pathname = '/customer'
-    
-    if (pathname !== url.pathname) {
-       return NextResponse.redirect(url)
-    }
-  }
-
-  // Prevent accessing other roles' dashboards
   if (user) {
-    const role = user.user_metadata?.role || 'customer'
-    const url = request.nextUrl.clone()
-    let shouldRedirect = false
+    // If user is logged in, check their role in the profiles table
+    // We can query the profile to redirect them if they try to access the wrong dashboard
+    const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    const profile = data as any;
 
-    if (pathname.startsWith('/admin') && role !== 'admin') {
-      url.pathname = '/'
-      shouldRedirect = true
-    } else if (pathname.startsWith('/mechanic') && role !== 'mechanic') {
-      url.pathname = '/'
-      shouldRedirect = true
-    } else if (pathname.startsWith('/customer') && role !== 'customer') {
-      url.pathname = '/'
-      shouldRedirect = true
+    if (profile) {
+      if (isAuthRoute || url.pathname === '/') {
+        url.pathname = `/${profile.role}/dashboard`
+        return NextResponse.redirect(url)
+      }
+
+      // Protect routes based on role
+      if (url.pathname.startsWith('/customer') && profile.role !== 'customer') {
+        url.pathname = `/${profile.role}/dashboard`
+        return NextResponse.redirect(url)
+      }
+      if (url.pathname.startsWith('/mechanic') && profile.role !== 'mechanic') {
+        url.pathname = `/${profile.role}/dashboard`
+        return NextResponse.redirect(url)
+      }
+      if (url.pathname.startsWith('/admin') && profile.role !== 'admin') {
+        url.pathname = `/${profile.role}/dashboard`
+        return NextResponse.redirect(url)
+      }
     }
-
-    if (shouldRedirect) return NextResponse.redirect(url)
   }
 
   return supabaseResponse

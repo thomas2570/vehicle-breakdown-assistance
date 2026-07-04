@@ -6,12 +6,14 @@ export default async function MechanicHistoryPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: requests } = await supabase
+  const { data } = await supabase
     .from('breakdown_requests')
     .select('*, profiles:customer_id(full_name), vehicles(make, model)')
-    .eq('mechanic_id', user?.id)
+    .eq('mechanic_id', (user?.id as string))
     .in('status', ['completed', 'cancelled'])
     .order('created_at', { ascending: false })
+    
+  const requests = data as any[]
 
   return (
     <div className="space-y-6">
@@ -41,7 +43,7 @@ export default async function MechanicHistoryPage() {
                       <span className="flex items-center gap-1"><Car className="w-3 h-3"/> {request.vehicles?.make} {request.vehicles?.model}</span>
                     </div>
                     <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-                      <MapPin className="w-3 h-3" /> Lat: {request.location_lat.toFixed(4)}, Lng: {request.location_lng.toFixed(4)}
+                      <MapPin className="w-3 h-3" /> Lat: {request.lat?.toFixed(4)}, Lng: {request.lng?.toFixed(4)}
                     </p>
                   </div>
 

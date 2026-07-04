@@ -5,10 +5,12 @@ import { createClient } from '@/lib/supabase/server'
 export default async function AdminUsersPage() {
   const supabase = await createClient()
 
-  const { data: users } = await supabase
-    .from('users')
-    .select('*, profiles(full_name, phone)')
+  const { data } = await supabase
+    .from('profiles')
+    .select('*')
     .order('created_at', { ascending: false })
+    
+  const users = data as any[]
 
   return (
     <div className="space-y-6">
@@ -36,8 +38,8 @@ export default async function AdminUsersPage() {
                 users.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell>
-                      <div className="font-medium">{user.profiles?.full_name || 'Unknown'}</div>
-                      <div className="text-xs text-muted-foreground">{user.email}</div>
+                      <div className="font-medium">{user.full_name || 'Unknown'}</div>
+                      <div className="text-xs text-muted-foreground">{user.phone}</div>
                     </TableCell>
                     <TableCell>
                       <span className={`text-xs font-medium px-2 py-1 rounded-full capitalize ${

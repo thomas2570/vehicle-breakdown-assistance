@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { acceptRequest, updateRequestStatus } from '@/app/(dashboard)/mechanic/actions'
+import { acceptRequest, updateRequestStatus } from '@/app/mechanic/dashboard/actions'
 import { toast } from 'sonner'
 import { ArrowRight, CheckCircle2 } from 'lucide-react'
 
