@@ -8,6 +8,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (formData: FormData) => {
+    setError(null)
     const res = await login(formData)
     if (res?.error) {
       setError(res.error)
@@ -37,7 +38,12 @@ export default function LoginPage() {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium leading-none" htmlFor="password">Password</label>
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium leading-none" htmlFor="password">Password</label>
+              <Link href="/forgot-password" className="text-sm font-medium underline underline-offset-4 hover:text-zinc-900 dark:hover:text-zinc-50 text-zinc-500">
+                Forgot password?
+              </Link>
+            </div>
             <input 
               id="password"
               name="password" 
