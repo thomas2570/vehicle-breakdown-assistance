@@ -8,7 +8,7 @@ export async function login(formData: FormData) {
   const supabase = await createClient()
 
   const data = {
-    email: formData.get('email') as string,
+    email: (formData.get('email') as string).trim(),
     password: formData.get('password') as string,
   }
 
@@ -25,7 +25,7 @@ export async function login(formData: FormData) {
 export async function signup(formData: FormData) {
   const supabase = await createClient()
   
-  const email = formData.get('email') as string
+  const email = (formData.get('email') as string).trim()
   const password = formData.get('password') as string
   const role = formData.get('role') as string || 'customer'
   const fullName = formData.get('full_name') as string
@@ -47,7 +47,7 @@ export async function signup(formData: FormData) {
   })
 
   if (signUpError) {
-    return { error: signUpError.message }
+    return { error: typeof signUpError.message === 'string' ? signUpError.message : JSON.stringify(signUpError) }
   }
 
   // 2. Trigger Phone Verification SMS
@@ -57,7 +57,7 @@ export async function signup(formData: FormData) {
   })
 
   if (updateError) {
-    return { error: `Signup succeeded, but failed to send SMS: ${updateError.message}` }
+    return { error: `Signup succeeded, but failed to send SMS: ${updateError.message || JSON.stringify(updateError)}` }
   }
 
   return { success: true }
@@ -90,7 +90,7 @@ export async function resetPassword(formData: FormData) {
   const origin = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${origin}/reset-password`,
+    redirectTo: `${origin}/auth/callback?next=/reset-password`,
   })
 
   if (error) {
