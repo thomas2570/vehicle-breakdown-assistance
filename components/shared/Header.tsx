@@ -1,16 +1,16 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Wrench } from 'lucide-react'
+import Image from 'next/image'
 
 export function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b border-white/10 bg-white/70 dark:bg-zinc-950/70 backdrop-blur-md">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="bg-primary/10 p-2 rounded-xl group-hover:bg-primary/20 transition-colors">
-            <Wrench className="w-5 h-5 text-primary" />
+          <div className="group-hover:opacity-80 transition-opacity">
+            <Image src="/logo.png" alt="RescueRoad Logo" width={36} height={36} className="rounded-lg object-contain" />
           </div>
-          <span className="font-bold text-lg tracking-tight">RescueRoad</span>
+          <span className="font-bold text-xl tracking-tight">RescueRoad</span>
         </Link>
         
         <nav className="hidden md:flex items-center gap-8">

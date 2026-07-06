@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Car, LayoutDashboard, Settings, LogOut, FileClock, PenTool, Users, Wrench } from 'lucide-react'
 import { signout } from '@/features/auth/actions'
@@ -38,8 +39,8 @@ export function Sidebar({ role }: { role: 'customer' | 'mechanic' | 'admin' }) {
     <div className="w-64 border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 flex flex-col h-full hidden md:flex">
       <div className="h-16 flex items-center px-6 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="bg-primary/10 p-1.5 rounded-lg group-hover:bg-primary/20 transition-colors">
-            <Wrench className="w-5 h-5 text-primary" />
+          <div className="group-hover:opacity-80 transition-opacity">
+            <Image src="/logo.png" alt="RescueRoad Logo" width={28} height={28} className="rounded-md object-contain" />
           </div>
           <span className="font-bold tracking-tight">RescueRoad</span>
         </Link>
