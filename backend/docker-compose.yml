@@ -1,0 +1,25 @@
+services:
+  geo-postgres:
+    image: postgis/postgis:16-3.4
+    container_name: geo-roadside-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Vidyanshu
+      POSTGRES_DB: roadside_assistance
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - geo_postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d roadside_assistance"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  geo_postgres_data:
