@@ -18,6 +18,8 @@ from app.schemas.breakdown import (
     BreakdownStatus,
     BreakdownStatusUpdate,
 )
+from app.schemas.assignment import AssignmentAction,AssignmentActionRequest
+
 from app.security.dependencies import get_current_user
 
 from app.services.breakdown_service import (
